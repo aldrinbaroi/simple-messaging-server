@@ -1,0 +1,46 @@
+spring:
+  profiles: test
+
+  mail:
+    host: localhost
+    port: 2025
+    #username: mail
+    #password: mail
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+        debug: false
+        
+# Spring Boot actuator         
+management:
+  endpoint:
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include:
+        - health
+        - shutdown
+
+# Spring Boot Embedded Tomcat Server
+server:
+    address: 0.0.0.0
+    port: 1080
+
+# Simple Messaging Service 
+simple-messaging-service:
+  smtpServer:
+    softwareName: Simple SMTP Server
+    port: 1025
+    timeout: 120
+  
+      
+#::END::
+      
+      
