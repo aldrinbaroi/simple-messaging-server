@@ -1,0 +1,10 @@
+#!/bin/bash
+
+COMMAND=$1
+PASSWORD=$2
+TEXT=$3
+CLASSPATH=lib/.:lib/jasypt-1.9.3.jar
+cd $(dirname $(dirname $(realpath $0)))
+java -cp ${CLASSPATH} net.baroi.messaging.server.simple.encryption.EncryptDecryptUtil "${COMMAND}" "${PASSWORD}" "${TEXT}"
+
+#::END::

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+curl -X POST http://localhost:1080/actuator/shutdown > /dev/null 2>&1
+
+#::END::

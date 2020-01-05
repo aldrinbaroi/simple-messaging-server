@@ -1,0 +1,6 @@
+spring:
+  profiles:
+    active:
+    - mobile-carriers
+    - test
+
