@@ -2,10 +2,9 @@ spring:
   profiles:
     active:
     - mobile-carriers
-    - prod
+    - dev
 
 logging:
-  config: config/logback-spring.xml
   register-shutdown-hook: true
   file:
     name: log/simple-messaging-server.log
