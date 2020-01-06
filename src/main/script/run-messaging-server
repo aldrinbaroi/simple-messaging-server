@@ -2,7 +2,7 @@
 
 JASYPT_ENCRYPTOR_PASSWORD=$1
 export JASYPT_ENCRYPTOR_PASSWORD
-CLASSPATH=conf:lib
+CLASSPATH=config:lib
 cd $(dirname $(dirname $(realpath $0)))
 nohup java -cp ${CLASSPATH} -jar lib/simple-messaging-server-1.0.jar > /dev/null 2>&1 &
 
