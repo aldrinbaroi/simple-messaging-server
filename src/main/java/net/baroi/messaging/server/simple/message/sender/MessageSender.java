@@ -6,7 +6,6 @@ package net.baroi.messaging.server.simple.message.sender;
 import java.util.Base64;
 
 import javax.mail.Message.RecipientType;
-import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -62,7 +61,7 @@ public class MessageSender {
 			mimeMessage.setText(message.getText());
 			javaMailSender.send(mimeMessage);
 			log.debug("Email sent.");
-		} catch (MessagingException e) {
+		} catch (Exception e) {
 			log.error(ExceptionUtil.getStackTrace(e));
 		}
 	}
