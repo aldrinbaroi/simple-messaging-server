@@ -1,6 +1,7 @@
 package net.baroi.messaging.server.simple.message.sender;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
@@ -91,17 +92,21 @@ class MessageSenderTest {
 		mailMessage.setTo(mailUser);
 		mailMessage.setSubject(mailSubject);
 		mailMessage.setText(mailText);
-		messageSender.sendMessage(mailMessage);
-		//
-		Session imapSession = mailServer.getImap().createSession();
-		Store store = imapSession.getStore("imap");
-		store.connect(mailUser, mailPassword);
-		Folder inbox = store.getFolder("INBOX");
-		inbox.open(Folder.READ_ONLY);
-		assertThat(inbox.getMessageCount()).isEqualTo(1);
-		Message msgReceived = inbox.getMessage(1);
-		assertThat(msgReceived.getSubject()).isEqualTo(mailSubject);
-		assertThat(msgReceived.getContent().toString()).contains(mailText);
+		try {
+			messageSender.sendMessage(mailMessage);
+			//
+			Session imapSession = mailServer.getImap().createSession();
+			Store store = imapSession.getStore("imap");
+			store.connect(mailUser, mailPassword);
+			Folder inbox = store.getFolder("INBOX");
+			inbox.open(Folder.READ_ONLY);
+			assertThat(inbox.getMessageCount()).isEqualTo(1);
+			Message msgReceived = inbox.getMessage(1);
+			assertThat(msgReceived.getSubject()).isEqualTo(mailSubject);
+			assertThat(msgReceived.getContent().toString()).contains(mailText);
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
 	}
 
 	@Test
@@ -115,16 +120,20 @@ class MessageSenderTest {
 		message.setMobileNumber(smsUser);
 		message.setMobileCarrierId(smsCarrier);
 		message.setText(smsText);
-		messageSender.sendMessage(message);
-		//
-		Session imapSession = mailServer.getImap().createSession();
-		Store store = imapSession.getStore("imap");
-		store.connect(smsUser_email, smsPassword);
-		Folder inbox = store.getFolder("INBOX");
-		inbox.open(Folder.READ_ONLY);
-		assertThat(inbox.getMessageCount()).isEqualTo(1);
-		Message msgReceived = inbox.getMessage(1);
-		assertThat(msgReceived.getContent().toString()).contains(smsText);
+		try {
+			messageSender.sendMessage(message);
+			//
+			Session imapSession = mailServer.getImap().createSession();
+			Store store = imapSession.getStore("imap");
+			store.connect(smsUser_email, smsPassword);
+			Folder inbox = store.getFolder("INBOX");
+			inbox.open(Folder.READ_ONLY);
+			assertThat(inbox.getMessageCount()).isEqualTo(1);
+			Message msgReceived = inbox.getMessage(1);
+			assertThat(msgReceived.getContent().toString()).contains(smsText);
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
 	}
 
 	// TODO Need to figure out how to test media (not working with Greenmail)
@@ -142,15 +151,19 @@ class MessageSenderTest {
 		message.setMediaName(media.getMediaName());
 		message.setMediaType(media.getMediaType());
 		message.setMediaContent(mediaContent);
-		messageSender.sendMessage(message);
-		//
-		Session imapSession = mailServer.getImap().createSession();
-		Store store = imapSession.getStore("imap");
-		store.connect(mmsUser_email, mmsPassword);
-		Folder inbox = store.getFolder("INBOX");
-		inbox.open(Folder.READ_ONLY);
-		assertThat(inbox.getMessageCount()).isEqualTo(1);
-		Message msgReceived = inbox.getMessage(1);
-		assertThat(msgReceived.getContent().toString()).isEqualTo(mediaContent);
+		try {
+			messageSender.sendMessage(message);
+			//
+			Session imapSession = mailServer.getImap().createSession();
+			Store store = imapSession.getStore("imap");
+			store.connect(mmsUser_email, mmsPassword);
+			Folder inbox = store.getFolder("INBOX");
+			inbox.open(Folder.READ_ONLY);
+			assertThat(inbox.getMessageCount()).isEqualTo(1);
+			Message msgReceived = inbox.getMessage(1);
+			assertThat(msgReceived.getContent().toString()).isEqualTo(mediaContent);
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
 	}
 }

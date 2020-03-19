@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+import net.baroi.messaging.server.simple.message.Message;
 import net.baroi.messaging.server.simple.message.sender.MessageSender;
+import net.baroi.messaging.server.simple.message.sender.MessageSenderException;
+import net.baroi.util.exception.ExceptionUtil;
 
 /**
  * 
@@ -26,14 +29,17 @@ class MessageQueueProcessor extends Thread {
 	@Autowired
 	private MessageQueue messageQueue;
 	private AtomicBoolean process;
-	private AtomicBoolean sleeping;
+	private int sendFailCount;
+	private final static long SHORT_SLEEP_DURATION = 1000;
+	private final static long CIRCUIT_BREAKER_SLEEP_DURATION = 30 * 1000;
+	private final static long LONG_SLEEP_DURATION = Long.MAX_VALUE;
 
 	/**
 	 * 
 	 */
 	MessageQueueProcessor() {
 		process = new AtomicBoolean(false);
-		sleeping = new AtomicBoolean(false);
+		this.sendFailCount = 0;
 	}
 
 	/**
@@ -61,49 +67,53 @@ class MessageQueueProcessor extends Thread {
 
 	/**
 	 * 
-	 * @return
-	 */
-	public boolean isSleeping() {
-		return sleeping.get();
-	}
-
-	/**
-	 * 
 	 */
 	public void run() {
 		log.info("Message queue processor is running.");
 		while (process.get() == true) {
-			sleeping.set(false);
-			for (int count = 0; count < 5; count++) {
-				if (!messageQueue.isEmpty()) {
-					log.debug("Sending message...");
-					messageSender.sendMessage(messageQueue.remove());
+			while (!messageQueue.isEmpty()) {
+				log.debug("Sending message...");
+				Message message = messageQueue.remove();
+				try {
+					messageSender.sendMessage(message);
+				} catch (MessageSenderException e) {
+					log.error("Failed to send message.");
+					log.error("Requeuing message...");
+					messageQueue.requeueMessage(message);
+					if (++sendFailCount > 3) {
+						sendFailCount = 0;
+						takeCircuitBreakerSleep();
+					}
+					log.error(ExceptionUtil.getStackTrace(e));
 				}
 				takeShortSleep();
 			}
-			sleeping.set(true);
 			takeDeepSleep();
 		}
 		log.info("Message queue processor is shutdown.");
 	}
 
 	private void takeShortSleep() {
-		try {
-			log.debug("Message queue processor going into short sleep.");
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// ignored
-			log.debug("Received interrupt signal during short sleep");
-		}
+		log.debug("Message queue processor going into short sleep.");
+		gotoSleep(SHORT_SLEEP_DURATION);
+	}
+
+	private void takeCircuitBreakerSleep() {
+		log.debug("Message queue processor going into circuit breaker sleep mode");
+		gotoSleep(CIRCUIT_BREAKER_SLEEP_DURATION);
 	}
 
 	private void takeDeepSleep() {
+		log.debug("Message queue processor going into deep sleep mode");
+		gotoSleep(LONG_SLEEP_DURATION);
+	}
+
+	private void gotoSleep(long milliSec) {
 		try {
-			log.debug("Message queue processor going into deep sleep mode");
-			Thread.sleep(Long.MAX_VALUE);
+			Thread.sleep(milliSec);
 		} catch (InterruptedException e) {
 			// ignored
-			log.debug("Received interrupt signal during deep sleep.");
+			log.debug("Received interrupt signal during sleep.");
 		}
 	}
 }

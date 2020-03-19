@@ -45,6 +45,10 @@ public class MessageQueue {
 		log.debug("Sending interrupt signal to message queue processor.");
 		messageQueueProcessor.interrupt();
 	}
+	
+	void requeueMessage(Message message) {
+		messageQueue.add(message);
+	}
 
 	boolean isEmpty() {
 		return messageQueue.isEmpty();

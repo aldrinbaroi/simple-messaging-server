@@ -19,7 +19,6 @@ import net.baroi.messaging.server.simple.message.MMSMessage;
 import net.baroi.messaging.server.simple.message.MailMessage;
 import net.baroi.messaging.server.simple.message.Message;
 import net.baroi.messaging.server.simple.message.SMSMessage;
-import net.baroi.util.exception.ExceptionUtil;
 
 /**
  * @author Aldrin Baroi
@@ -37,8 +36,9 @@ public class MessageSender {
 	/**
 	 * 
 	 * @param message
+	 * @throws MessageSenderException
 	 */
-	public void sendMessage(Message message) {
+	public void sendMessage(Message message) throws MessageSenderException {
 		if (message instanceof MailMessage)
 			sendMailMessage((MailMessage) message);
 		else if (message instanceof SMSMessage)
@@ -50,8 +50,9 @@ public class MessageSender {
 	/**
 	 * 
 	 * @param message
+	 * @throws MessageSenderException
 	 */
-	private void sendMailMessage(MailMessage message) {
+	private void sendMailMessage(MailMessage message) throws MessageSenderException {
 		log.debug("Sending email...");
 		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 		try {
@@ -62,15 +63,16 @@ public class MessageSender {
 			javaMailSender.send(mimeMessage);
 			log.debug("Email sent.");
 		} catch (Exception e) {
-			log.error(ExceptionUtil.getStackTrace(e));
+			throw new MessageSenderException(e);
 		}
 	}
 
 	/**
 	 * 
 	 * @param message
+	 * @throws MessageSenderException
 	 */
-	private void sendSMSMessage(SMSMessage message) {
+	private void sendSMSMessage(SMSMessage message) throws MessageSenderException {
 		log.debug("Sending SMS...");
 		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 		try {
@@ -81,15 +83,16 @@ public class MessageSender {
 			javaMailSender.send(mimeMessage);
 			log.debug("SMS sent.");
 		} catch (Exception e) {
-			log.error(ExceptionUtil.getStackTrace(e));
+			throw new MessageSenderException(e);
 		}
 	}
 
 	/**
 	 * 
 	 * @param message
+	 * @throws MessageSenderException
 	 */
-	private void sendMMSMessage(MMSMessage message) {
+	private void sendMMSMessage(MMSMessage message) throws MessageSenderException {
 		log.debug("Sending MMS...");
 		String text = message.getText();
 		if (text != null) {
@@ -106,7 +109,7 @@ public class MessageSender {
 			javaMailSender.send(mimeMessage);
 			log.debug("MMS sent.");
 		} catch (Exception e) {
-			log.error(ExceptionUtil.getStackTrace(e));
+			throw new MessageSenderException(e);
 		}
 	}
 }
